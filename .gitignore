@@ -6,3 +6,4 @@ qa-*.png
 public/assets/templates/*.png
 public/assets/templates/generated-bases/
 public/assets/templates/*-six-section-report-pages/
+public/assets/templates/*-equal-height-report-pages/*.png

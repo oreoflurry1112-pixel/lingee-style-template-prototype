@@ -110,7 +110,7 @@ const existingArtifacts = [
 
 const createReportPages = (name) => Array.from(
   { length: 6 },
-  (_, index) => `/assets/templates/${name}-pages/page-${index + 1}.png?v=5`,
+  (_, index) => `/assets/templates/${name}-pages/page-${index + 1}.webp?v=6`,
 );
 
 const templates = [
@@ -120,7 +120,7 @@ const templates = [
     name: '清爽简报',
     description: '章节连续、重点清晰，适合应付风险监控与业务复盘',
     accent: '#d7b81d',
-    image: '/assets/templates/clean-equal-height-report-pages/page-1.png?v=5',
+    image: '/assets/templates/clean-equal-height-report-pages/page-1.webp?v=6',
     pages: createReportPages('clean-equal-height-report'),
     tag: '长报告',
   },
@@ -130,7 +130,7 @@ const templates = [
     name: '咨询报告',
     description: '结论先行、逻辑严谨，适合管理层决策汇报',
     accent: '#2678e8',
-    image: '/assets/templates/consulting-equal-height-report-pages/page-1.png?v=5',
+    image: '/assets/templates/consulting-equal-height-report-pages/page-1.webp?v=6',
     pages: createReportPages('consulting-equal-height-report'),
     tag: '咨询长报',
   },
@@ -140,7 +140,7 @@ const templates = [
     name: '经营报告',
     description: '叙事从容、图表舒展，适合年度经营与组织复盘',
     accent: '#4e795d',
-    image: '/assets/templates/editorial-equal-height-report-pages/page-1.png?v=5',
+    image: '/assets/templates/editorial-equal-height-report-pages/page-1.webp?v=6',
     pages: createReportPages('editorial-equal-height-report'),
     tag: '叙事长报',
   },
@@ -150,7 +150,7 @@ const templates = [
     name: '深色报告',
     description: '高对比、层级鲜明，适合高层会议与重点项目汇报',
     accent: '#21bde8',
-    image: '/assets/templates/dark-equal-height-report-pages/page-1.png?v=5',
+    image: '/assets/templates/dark-equal-height-report-pages/page-1.webp?v=6',
     pages: createReportPages('dark-equal-height-report'),
     tag: '高层汇报',
   },

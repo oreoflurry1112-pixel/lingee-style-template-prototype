@@ -19,6 +19,14 @@ if (!existsSync(templateDir)) {
 for (const entry of readdirSync(templateDir)) {
   if (!runtimeAssets.has(entry)) {
     rmSync(path.join(templateDir, entry), { recursive: true, force: true });
+    continue;
+  }
+
+  const runtimeDir = path.join(templateDir, entry);
+  for (const file of readdirSync(runtimeDir)) {
+    if (file.endsWith(".png")) {
+      rmSync(path.join(runtimeDir, file), { force: true });
+    }
   }
 }
 
