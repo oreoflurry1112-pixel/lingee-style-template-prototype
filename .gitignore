@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.vite/
+*.log
+qa-*.png
+public/assets/templates/*.png
+public/assets/templates/generated-bases/
+public/assets/templates/*-six-section-report-pages/
