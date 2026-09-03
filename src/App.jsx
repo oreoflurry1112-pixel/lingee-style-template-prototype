@@ -96,7 +96,6 @@ const reportModeLabels = { scroll: '上下滑动', paged: '分页切换' };
 const reportModeSwitchLabels = { scroll: '上下滑动', paged: '左右切换' };
 const createTemplatePrompt = (templateName, reportMode = 'scroll') => `生成【${templateName}】风格的分析报告，报告支持${reportModeLabels[reportMode]}，包含现状概览、表现分析、结论建议。`;
 const createSourceStylePrompt = (sourceName, templateName, reportMode = 'scroll') => `参考【${sourceName}】的视觉风格，在【${templateName}】模板基础上生成自定义分析报告，报告支持${reportModeLabels[reportMode]}，包含现状概览、表现分析、结论建议。`;
-const createStyleModificationPrompt = (templateName, reportMode) => `将当前报告切换为【${templateName}】风格，并采用【${reportModeSwitchLabels[reportMode]}】效果，保留现有数据、指标与六章节结构，仅调整版式、配色和信息层级。`;
 
 const existingArtifacts = [
   'report_应付管理分析_20260814.html',
@@ -323,21 +322,20 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
       dismissStyleMenu();
       return;
     }
-    setDraftTemplate(template);
+    setDraftTemplate(null);
     setDraftReportMode(reportMode);
-    setStylePrompt(createStyleModificationPrompt(template.name, reportMode));
+    setStylePrompt('');
     setStyleMenuOpen(true);
   }
 
   function chooseReportStyle(nextTemplate) {
     setDraftTemplate(nextTemplate);
-    setStylePrompt(createStyleModificationPrompt(nextTemplate.name, draftReportMode));
     reportScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function submitStyleModification() {
     const modification = stylePrompt.trim();
-    if (!draftTemplate || !modification) return;
+    if (!draftTemplate) return;
     const nextTemplate = draftTemplate;
     const nextReportMode = draftReportMode;
     if (regenerationTimerRef.current) window.clearTimeout(regenerationTimerRef.current);
@@ -399,7 +397,7 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
 
           {styleRevision ? (
             <div className="style-revision-record" aria-live="polite">
-              <div>{styleRevision.prompt}</div>
+              {styleRevision.prompt ? <div>{styleRevision.prompt}</div> : null}
               <p className={styleRevision.status}>
                 {styleRevision.status === 'generating' ? <ArrowsClockwise size={14} /> : <Check size={14} weight="bold" />}
                 {styleRevision.status === 'generating' ? `正在按“${styleRevision.templateName}”风格和${reportModeSwitchLabels[styleRevision.reportMode]}效果重新生成报告` : `报告已重新生成 · ${styleRevision.templateName} · ${reportModeSwitchLabels[styleRevision.reportMode]}`}
@@ -448,7 +446,7 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
                 <div className="report-style-menu" role="dialog" aria-label="选择报告风格">
                   <header><strong>切换报告风格</strong><small>选择模板后，可预览并填写修改要求</small></header>
                   <div className="report-style-options">
-                    {templates.map((option) => {
+                    {templates.filter((option) => option.id !== template.id).map((option) => {
                       const OptionIcon = option.icon;
                       const selected = option.id === displayTemplate.id;
                       return (
@@ -461,13 +459,13 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
                     })}
                   </div>
                   <div className="report-style-prompt-field">
-                    <label htmlFor="report-style-prompt-inline"><strong>修改要求</strong><small>可在默认内容基础上补充配色、排版或重点信息要求</small></label>
+                    <label htmlFor="report-style-prompt-inline"><strong>修改要求</strong><small>选填，可补充配色、排版或重点信息要求</small></label>
                     <textarea id="report-style-prompt-inline" aria-label="风格修改提示词" maxLength={300} value={stylePrompt} onChange={(event) => setStylePrompt(event.target.value)} />
                     <span>{stylePrompt.length} / 300</span>
                   </div>
                   <footer className="report-style-menu-footer">
                     <button type="button" onClick={dismissStyleMenu}>取消</button>
-                    <button className="submit-style-change" type="button" disabled={!draftTemplate || !stylePrompt.trim()} onClick={submitStyleModification}><PaperPlaneRight size={14} weight="fill" />提交修改</button>
+                    <button className="submit-style-change" type="button" disabled={!draftTemplate} onClick={submitStyleModification}><PaperPlaneRight size={14} weight="fill" />提交修改</button>
                   </footer>
                 </div>
               ) : null}
@@ -501,7 +499,7 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
             <div className="report-regeneration-overlay" role="status" aria-live="polite">
               <span><ArrowsClockwise size={24} /></span>
               <strong>正在重新生成报告</strong>
-              <p>正在应用“{styleRevision.templateName}”风格、{reportModeSwitchLabels[styleRevision.reportMode]}效果及修改提示词</p>
+              <p>正在应用“{styleRevision.templateName}”风格和{reportModeSwitchLabels[styleRevision.reportMode]}效果{styleRevision.prompt ? '，并处理补充修改要求' : ''}</p>
               <div><i /></div>
             </div>
           ) : null}
