@@ -197,9 +197,9 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
 .composer:focus-within { border-color: color-mix(in srgb, var(--active-template) 45%, #dedee3); box-shadow: 0 8px 25px rgba(42, 39, 55, .09), 0 0 0 3px color-mix(in srgb, var(--active-template) 8%, transparent); }
 .composer textarea { width: 100%; flex: 1; resize: none; border: 0; outline: none; color: #2c2c32; background: transparent; font-size: 15px; line-height: 1.6; }
 .composer textarea::placeholder { color: #b8b8be; }
-.structured-prompt { min-height: 50px; flex: 1; display: flex; align-content: flex-start; align-items: center; flex-wrap: wrap; gap: 5px; color: #4a4a52; font-size: 14px; line-height: 1.7; }
-.structured-prompt-copy { min-height: 28px; padding: 0; border: 0; color: inherit; background: transparent; cursor: text; font: inherit; line-height: inherit; text-align: left; }
-.structured-prompt-copy.rest { flex: 1 1 390px; }
+.structured-prompt { min-height: 50px; flex: 1; display: flex; align-items: flex-start; gap: 5px; color: #4a4a52; font-size: 14px; line-height: 1.7; }
+.structured-prompt-prefix { height: 31px; display: inline-flex; align-items: center; flex: 0 0 auto; }
+.composer textarea.structured-prompt-editor { width: auto; min-width: 0; height: 50px; padding: 4px 0 0; flex: 1 1 auto; color: inherit; font-size: 14px; line-height: 1.65; }
 .inline-template-control { position: relative; display: inline-flex; align-items: center; }
 .inline-template-select { height: 31px; padding: 0 9px 0 11px; border: 1px solid #e6e6eb; border-radius: 11px; display: inline-flex; align-items: center; gap: 5px; color: #4b4b52; background: #f7f7f9; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .inline-template-select:hover, .inline-template-select[aria-expanded='true'] { border-color: #d9d9e0; background: #f1f1f4; }
@@ -241,9 +241,6 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
 .agent-selection-chip > button:hover { color: var(--active-template); background: color-mix(in srgb, var(--active-template) 10%, white); }
 .agent-context-row .source-pill { height: 32px; max-width: 230px; padding: 0 8px; border: 0; border-radius: 11px; display: inline-flex; align-items: center; gap: 6px; overflow: hidden; color: #4d4d55; background: transparent; cursor: pointer; font-size: 13px; white-space: nowrap; text-overflow: ellipsis; }
 .agent-context-row .source-pill.active, .agent-context-row .source-pill:hover { color: var(--active-template); background: color-mix(in srgb, var(--active-template) 7%, #f2f2f5); }
-.selected-template-chip { height: 32px; max-width: 160px; padding: 0 9px; border: 0; border-radius: 11px; display: inline-flex; align-items: center; gap: 6px; overflow: hidden; color: #52525a; background: #f3f3f6; cursor: pointer; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
-.selected-template-chip:hover { color: #34343a; background: #ececf1; }
-.selected-template-chip svg:first-child { color: var(--active-template); }
 .agent-quick-entry { height: 38px; margin-top: 20px; padding: 0 14px; border: 1px solid #e6e6eb; border-radius: 19px; display: inline-flex; align-items: center; gap: 7px; color: #4b4b53; background: #fff; box-shadow: 0 2px 7px rgba(38,35,50,.03); cursor: pointer; font-size: 13px; transition: border-color .16s ease, color .16s ease, transform .16s ease; }
 .agent-quick-entry:hover { border-color: color-mix(in srgb, var(--active-template) 28%, #e6e6eb); color: var(--active-template); transform: translateY(-1px); }
 .composer-popover { position: absolute; z-index: 20; border: 1px solid #e9e9ed; border-radius: 15px; background: rgba(255,255,255,.98); box-shadow: 0 12px 32px rgba(37,34,48,.16); animation: popover-in .14s ease-out; }
@@ -478,7 +475,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
   .recommendation-card { height: 69px; }
   .template-thumbnail-card { height: 139px; }
   .template-thumbnail-image { width: 100%; height: 74px; }
-  .structured-prompt-copy.rest { flex-basis: 230px; }
+  .composer textarea.structured-prompt-editor { height: 72px; }
   .report-preview-meta small { max-width: 190px; }
   .report-preview-actions > span { max-width: 180px; line-height: 1.4; }
   .scroll-report-preview, .paged-report-preview { height: 330px; }

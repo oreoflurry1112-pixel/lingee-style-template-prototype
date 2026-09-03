@@ -711,14 +711,13 @@ export function App() {
   const [submittedPrompt, setSubmittedPrompt] = useState('');
   const [submittedReportMode, setSubmittedReportMode] = useState('scroll');
   const [submittedCustomStyle, setSubmittedCustomStyle] = useState(false);
-  const [promptEditing, setPromptEditing] = useState(false);
   const composerRef = useRef(null);
-  const promptInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const canSend = Boolean(prompt.trim() || selectedSkill || attachedFile);
-  const recommendedPrompt = createTemplatePrompt(selectedTemplate.name, selectedReportMode);
-  const showStructuredPrompt = Boolean(prompt) && prompt === recommendedPrompt && !promptEditing;
+  const templatePromptPrefix = `生成【${selectedTemplate.name}】`;
+  const showStructuredPrompt = Boolean(prompt) && prompt.startsWith(templatePromptPrefix);
+  const templatePromptSuffix = showStructuredPrompt ? prompt.slice(templatePromptPrefix.length) : '';
   const visibleTopics = topicSearching
     ? (topicSearch.trim() ? topicOptions.filter((topic) => topic.toLowerCase().includes(topicSearch.trim().toLowerCase())) : [])
     : topicOptions;
@@ -786,14 +785,15 @@ export function App() {
     setSelectedTemplate(template);
     setSelectedReportMode(reportMode);
     setPrompt(createTemplatePrompt(template.name, reportMode));
-    setPromptEditing(false);
     setOpenMenu(null);
   }
 
-  function editRecommendedPrompt() {
-    setPromptEditing(true);
+  function choosePromptTemplate(template) {
+    setPrompt((current) => current.startsWith(templatePromptPrefix)
+      ? `生成【${template.name}】${current.slice(templatePromptPrefix.length)}`
+      : createTemplatePrompt(template.name, selectedReportMode));
+    setSelectedTemplate(template);
     setOpenMenu(null);
-    window.setTimeout(() => promptInputRef.current?.focus(), 0);
   }
 
   function useStyleSource(sourceName) {
@@ -832,7 +832,6 @@ export function App() {
               {selectedAgent && agentEntryMode === 'quick' && (
                 <div className="agent-context-row" aria-label="当前智能体与主题">
                   <span className="agent-selection-chip"><Robot size={17} weight="duotone" />{selectedAgent}<button type="button" aria-label={`取消选择${selectedAgent}`} onClick={clearAgent}><X size={14} /></button></span>
-                  {showStructuredPrompt && <button className="selected-template-chip" type="button" onClick={() => toggleMenu('templatePrompt')}><PaintBrush size={15} weight="duotone" />{selectedTemplate.name}<CaretDown size={12} /></button>}
                   <button className={`source-pill${openMenu === 'topics' ? ' active' : ''}`} aria-label={selectedTopic || '选择主题'} aria-expanded={openMenu === 'topics'} type="button" onClick={() => toggleMenu('topics')}><Database size={16} weight="duotone" />{selectedTopic || '选择主题'}<CaretDown size={13} /></button>
                 </div>
               )}
@@ -843,8 +842,8 @@ export function App() {
                 </div>
               )}
               {showStructuredPrompt ? (
-                <div className="structured-prompt" aria-label={recommendedPrompt}>
-                  <button className="structured-prompt-copy" type="button" onClick={editRecommendedPrompt}>生成</button>
+                <div className="structured-prompt" aria-label={prompt}>
+                  <span className="structured-prompt-prefix">生成</span>
                   <span className="inline-template-control">
                     <button className="inline-template-select" type="button" aria-haspopup="menu" aria-expanded={openMenu === 'templatePrompt'} onClick={() => toggleMenu('templatePrompt')}>
                       {selectedTemplate.name}<CaretDown size={13} />
@@ -852,17 +851,17 @@ export function App() {
                     {openMenu === 'templatePrompt' && (
                       <span className="inline-template-menu" role="menu" aria-label="切换推荐提示词模板">
                         {templates.map((template) => (
-                          <button className={selectedTemplate.id === template.id ? 'selected' : ''} role="menuitemradio" aria-checked={selectedTemplate.id === template.id} type="button" key={template.id} onClick={() => chooseTemplate(template, selectedReportMode)}>
+                          <button className={selectedTemplate.id === template.id ? 'selected' : ''} role="menuitemradio" aria-checked={selectedTemplate.id === template.id} type="button" key={template.id} onClick={() => choosePromptTemplate(template)}>
                             {template.name}{selectedTemplate.id === template.id && <Check size={14} weight="bold" />}
                           </button>
                         ))}
                       </span>
                     )}
                   </span>
-                  <button className="structured-prompt-copy rest" type="button" onClick={editRecommendedPrompt}>风格的分析报告，报告支持{reportModeLabels[selectedReportMode]}，包含现状概览、表现分析、结论建议。</button>
+                  <textarea className="structured-prompt-editor" aria-label="编辑报告提示词内容" rows={2} value={templatePromptSuffix} onChange={(event) => setPrompt(`${templatePromptPrefix}${event.target.value}`)} />
                 </div>
               ) : (
-                <textarea ref={promptInputRef} aria-label="任务描述" placeholder="快速开展企业数据分析，如查询财务数据、开展经营分析" value={prompt} onBlur={() => { if (prompt === recommendedPrompt) setPromptEditing(false); }} onChange={(event) => setPrompt(event.target.value)} />
+                <textarea aria-label="任务描述" placeholder="快速开展企业数据分析，如查询财务数据、开展经营分析" value={prompt} onChange={(event) => setPrompt(event.target.value)} />
               )}
               <div className="composer-toolbar">
                 <div className="composer-actions">
