@@ -666,11 +666,6 @@ function StyleTemplateGallery({ selected, selectedMode, onSelect }) {
 
   return (
     <section className="style-gallery" aria-label="选择报告模板">
-      <header className="template-gallery-summary">
-        <p><PaintBrush size={15} weight="duotone" />点击卡片直接使用上下滑动；预览后可按当前浏览模式使用</p>
-        <span className="gallery-selected-label"><Check size={13} weight="bold" />已选：{selected.name} · {reportModeLabels[selectedMode]}</span>
-      </header>
-
       <div className="template-thumbnail-grid" aria-label="预置报告模板">
         {templates.map((template) => {
           const isSelected = selected.id === template.id;
@@ -684,13 +679,12 @@ function StyleTemplateGallery({ selected, selectedMode, onSelect }) {
                   <span className="template-card-copy"><strong>{template.name}</strong><small>{template.description}</small></span>
                 </span>
               </button>
-              <button className={`template-card-action${isSelected ? ' selected' : ''}`} type="button" aria-label={`预览${template.name}`} onClick={() => setPreviewTemplate(template)}>{isSelected ? <Check size={14} weight="bold" /> : <Eye size={15} />}</button>
+              <button className="template-card-action" type="button" aria-label={`预览${template.name}`} onClick={() => setPreviewTemplate(template)}><Eye size={13} /><span>预览</span></button>
+              {isSelected && <span className="template-selected-mark" aria-label={`已选择${template.name}`}><Check size={12} weight="bold" /></span>}
             </article>
           );
         })}
       </div>
-
-      <p className="style-gallery-note"><MagicWand size={15} weight="duotone" />6 个板块：封面、数据表现 × 3、行动建议、风险与局限。</p>
 
       <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewTemplate(null)} onSelect={onSelect} selected={selected} />
     </section>
@@ -717,10 +711,14 @@ export function App() {
   const [submittedPrompt, setSubmittedPrompt] = useState('');
   const [submittedReportMode, setSubmittedReportMode] = useState('scroll');
   const [submittedCustomStyle, setSubmittedCustomStyle] = useState(false);
+  const [promptEditing, setPromptEditing] = useState(false);
   const composerRef = useRef(null);
+  const promptInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const canSend = Boolean(prompt.trim() || selectedSkill || attachedFile);
+  const recommendedPrompt = createTemplatePrompt(selectedTemplate.name, selectedReportMode);
+  const showStructuredPrompt = Boolean(prompt) && prompt === recommendedPrompt && !promptEditing;
   const visibleTopics = topicSearching
     ? (topicSearch.trim() ? topicOptions.filter((topic) => topic.toLowerCase().includes(topicSearch.trim().toLowerCase())) : [])
     : topicOptions;
@@ -788,6 +786,14 @@ export function App() {
     setSelectedTemplate(template);
     setSelectedReportMode(reportMode);
     setPrompt(createTemplatePrompt(template.name, reportMode));
+    setPromptEditing(false);
+    setOpenMenu(null);
+  }
+
+  function editRecommendedPrompt() {
+    setPromptEditing(true);
+    setOpenMenu(null);
+    window.setTimeout(() => promptInputRef.current?.focus(), 0);
   }
 
   function useStyleSource(sourceName) {
@@ -826,6 +832,7 @@ export function App() {
               {selectedAgent && agentEntryMode === 'quick' && (
                 <div className="agent-context-row" aria-label="当前智能体与主题">
                   <span className="agent-selection-chip"><Robot size={17} weight="duotone" />{selectedAgent}<button type="button" aria-label={`取消选择${selectedAgent}`} onClick={clearAgent}><X size={14} /></button></span>
+                  {showStructuredPrompt && <button className="selected-template-chip" type="button" onClick={() => toggleMenu('templatePrompt')}><PaintBrush size={15} weight="duotone" />{selectedTemplate.name}<CaretDown size={12} /></button>}
                   <button className={`source-pill${openMenu === 'topics' ? ' active' : ''}`} aria-label={selectedTopic || '选择主题'} aria-expanded={openMenu === 'topics'} type="button" onClick={() => toggleMenu('topics')}><Database size={16} weight="duotone" />{selectedTopic || '选择主题'}<CaretDown size={13} /></button>
                 </div>
               )}
@@ -835,7 +842,28 @@ export function App() {
                   {attachedFile && <span className="composer-selection-chip file"><FolderSimple size={14} />{attachedFile}<button type="button" aria-label={`移除附件${attachedFile}`} onClick={() => setAttachedFile('')}><X size={13} /></button></span>}
                 </div>
               )}
-              <textarea aria-label="任务描述" placeholder="快速开展企业数据分析，如查询财务数据、开展经营分析" value={prompt} onChange={(event) => setPrompt(event.target.value)} />
+              {showStructuredPrompt ? (
+                <div className="structured-prompt" aria-label={recommendedPrompt}>
+                  <button className="structured-prompt-copy" type="button" onClick={editRecommendedPrompt}>生成</button>
+                  <span className="inline-template-control">
+                    <button className="inline-template-select" type="button" aria-haspopup="menu" aria-expanded={openMenu === 'templatePrompt'} onClick={() => toggleMenu('templatePrompt')}>
+                      {selectedTemplate.name}<CaretDown size={13} />
+                    </button>
+                    {openMenu === 'templatePrompt' && (
+                      <span className="inline-template-menu" role="menu" aria-label="切换推荐提示词模板">
+                        {templates.map((template) => (
+                          <button className={selectedTemplate.id === template.id ? 'selected' : ''} role="menuitemradio" aria-checked={selectedTemplate.id === template.id} type="button" key={template.id} onClick={() => chooseTemplate(template, selectedReportMode)}>
+                            {template.name}{selectedTemplate.id === template.id && <Check size={14} weight="bold" />}
+                          </button>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                  <button className="structured-prompt-copy rest" type="button" onClick={editRecommendedPrompt}>风格的分析报告，报告支持{reportModeLabels[selectedReportMode]}，包含现状概览、表现分析、结论建议。</button>
+                </div>
+              ) : (
+                <textarea ref={promptInputRef} aria-label="任务描述" placeholder="快速开展企业数据分析，如查询财务数据、开展经营分析" value={prompt} onBlur={() => { if (prompt === recommendedPrompt) setPromptEditing(false); }} onChange={(event) => setPrompt(event.target.value)} />
+              )}
               <div className="composer-toolbar">
                 <div className="composer-actions">
                   <input ref={fileInputRef} className="composer-file-input" type="file" accept=".png,.jpg,.jpeg,.webp,.html,.htm,.ppt,.pptx,.doc,.docx,.pdf" onChange={handleFileSelection} />
