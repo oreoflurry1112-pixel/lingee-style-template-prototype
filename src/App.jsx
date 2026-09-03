@@ -94,8 +94,24 @@ const skillOptions = [
 
 const reportModeLabels = { scroll: '上下滑动', paged: '分页切换' };
 const reportModeSwitchLabels = { scroll: '上下滑动', paged: '左右切换' };
+const reportModePromptPattern = /【(?:上下滑动|左右切换|分页切换)】/;
+const reportTemplatePromptPattern = /【(?:清爽简报|咨询报告|经营报告|深色报告)】/;
 const createTemplatePrompt = (templateName, reportMode = 'scroll') => `生成【${templateName}】风格的分析报告，报告支持${reportModeLabels[reportMode]}，包含现状概览、表现分析、结论建议。`;
 const createSourceStylePrompt = (sourceName, templateName, reportMode = 'scroll') => `参考【${sourceName}】的视觉风格，在【${templateName}】模板基础上生成自定义分析报告，报告支持${reportModeLabels[reportMode]}，包含现状概览、表现分析、结论建议。`;
+const createStyleModificationPrompt = (templateName, reportMode) => `将当前报告切换为【${templateName}】风格，并采用【${reportModeSwitchLabels[reportMode]}】效果，保留现有数据、指标与六章节结构，仅调整版式、配色和信息层级。`;
+const syncStyleModificationPrompt = (prompt, templateName, reportMode) => {
+  const current = prompt.trim();
+  if (!current) return createStyleModificationPrompt(templateName, reportMode);
+  if (!reportTemplatePromptPattern.test(current) && !reportModePromptPattern.test(current)) {
+    return `${createStyleModificationPrompt(templateName, reportMode)} ${current}`;
+  }
+  const withTemplate = reportTemplatePromptPattern.test(current)
+    ? current.replace(reportTemplatePromptPattern, `【${templateName}】`)
+    : current;
+  return reportModePromptPattern.test(withTemplate)
+    ? withTemplate.replace(reportModePromptPattern, `【${reportModeSwitchLabels[reportMode]}】`)
+    : `${withTemplate} 展示采用【${reportModeSwitchLabels[reportMode]}】效果。`;
+};
 
 const existingArtifacts = [
   'report_应付管理分析_20260814.html',
@@ -260,6 +276,15 @@ const resultOutline = [
   ['六、风险与局限', '风险边界、数据限制与使用说明'],
 ];
 
+function ReportModeSwitch({ value, onChange }) {
+  return (
+    <div className="report-style-mode-switch" role="tablist" aria-label="报告切换效果">
+      <button className={value === 'scroll' ? 'active' : ''} role="tab" aria-selected={value === 'scroll'} type="button" onClick={() => onChange('scroll')}><ArrowsDownUp size={14} />上下滚动</button>
+      <button className={value === 'paged' ? 'active' : ''} role="tab" aria-selected={value === 'paged'} type="button" onClick={() => onChange('paged')}><SquaresFour size={14} />左右切换</button>
+    </div>
+  );
+}
+
 function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, onTemplateChange, onReportModeChange }) {
   const [reportOpen, setReportOpen] = useState(true);
   const [previewExpanded, setPreviewExpanded] = useState(false);
@@ -330,6 +355,15 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
 
   function chooseReportStyle(nextTemplate) {
     setDraftTemplate(nextTemplate);
+    setStylePrompt((current) => syncStyleModificationPrompt(current, nextTemplate.name, draftReportMode));
+    reportScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function chooseDraftReportMode(nextMode) {
+    const targetTemplate = draftTemplate || template;
+    setDraftTemplate(targetTemplate);
+    setDraftReportMode(nextMode);
+    setStylePrompt((current) => syncStyleModificationPrompt(current, targetTemplate.name, nextMode));
     reportScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -445,6 +479,7 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
               {styleMenuOpen ? (
                 <div className="report-style-menu" role="dialog" aria-label="选择报告风格">
                   <header><strong>切换报告风格</strong><small>选择模板后，可预览并填写修改要求</small></header>
+                  <ReportModeSwitch value={draftReportMode} onChange={chooseDraftReportMode} />
                   <div className="report-style-options">
                     {templates.filter((option) => option.id !== template.id).map((option) => {
                       const OptionIcon = option.icon;

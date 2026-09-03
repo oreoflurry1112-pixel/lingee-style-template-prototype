@@ -115,6 +115,11 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
 .report-style-menu > header { min-height: 52px; padding: 10px 12px 8px; display: flex; flex-direction: column; justify-content: center; gap: 3px; border-bottom: 1px solid #eeeeF1; }
 .report-style-menu > header strong { margin: 0; color: #303037; font-size: 12px; }
 .report-style-menu > header small { color: #96969e; font-size: 9px; }
+.report-style-mode-switch { padding: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; border-radius: 11px; background: #f0f0f3; }
+.report-style-menu > .report-style-mode-switch { margin: 8px 6px 2px; }
+.result-report-toolbar .report-style-menu .report-style-mode-switch > button { width: 100%; min-height: 30px; padding: 0 7px; border: 0; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: #76767f; background: transparent; cursor: pointer; white-space: nowrap; font-size: 9px; }
+.result-report-toolbar .report-style-mode-switch > button:hover { color: #45454c; background: rgba(255,255,255,.62); }
+.result-report-toolbar .report-style-mode-switch > button.active { color: var(--active-template); background: #fff; box-shadow: 0 2px 7px rgba(33,31,42,.08); font-weight: 650; }
 .report-style-options { padding: 6px 6px 4px; }
 .result-report-toolbar .report-style-options > button { width: 100%; min-height: 58px; padding: 6px; border: 0; border-radius: 11px; display: grid; grid-template-columns: 54px minmax(0, 1fr) 18px; align-items: center; gap: 8px; color: #44444b; background: transparent; cursor: pointer; text-align: left; }
 .result-report-toolbar .report-style-options > button:hover { background: #f4f4f7; }
