@@ -481,7 +481,7 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
                   <header><strong>切换报告风格</strong><small>选择模板后，可预览并填写修改要求</small></header>
                   <ReportModeSwitch value={draftReportMode} onChange={chooseDraftReportMode} />
                   <div className="report-style-options">
-                    {templates.filter((option) => option.id !== template.id).map((option) => {
+                    {templates.map((option) => {
                       const OptionIcon = option.icon;
                       const selected = option.id === displayTemplate.id;
                       return (
