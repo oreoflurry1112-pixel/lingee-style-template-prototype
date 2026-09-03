@@ -94,13 +94,9 @@ const skillOptions = [
 
 const reportModeLabels = { scroll: '上下滑动', paged: '分页切换' };
 const reportModeSwitchLabels = { scroll: '上下滑动', paged: '左右切换' };
-const reportModePromptPattern = /【(?:上下滑动|左右切换|分页切换)】/;
 const createTemplatePrompt = (templateName, reportMode = 'scroll') => `生成【${templateName}】风格的分析报告，报告支持${reportModeLabels[reportMode]}，包含现状概览、表现分析、结论建议。`;
 const createSourceStylePrompt = (sourceName, templateName, reportMode = 'scroll') => `参考【${sourceName}】的视觉风格，在【${templateName}】模板基础上生成自定义分析报告，报告支持${reportModeLabels[reportMode]}，包含现状概览、表现分析、结论建议。`;
 const createStyleModificationPrompt = (templateName, reportMode) => `将当前报告切换为【${templateName}】风格，并采用【${reportModeSwitchLabels[reportMode]}】效果，保留现有数据、指标与六章节结构，仅调整版式、配色和信息层级。`;
-const updateStyleModeInPrompt = (prompt, reportMode) => reportModePromptPattern.test(prompt)
-  ? prompt.replace(reportModePromptPattern, `【${reportModeSwitchLabels[reportMode]}】`)
-  : `${prompt} 展示采用【${reportModeSwitchLabels[reportMode]}】效果。`;
 
 const existingArtifacts = [
   'report_应付管理分析_20260814.html',
@@ -265,20 +261,10 @@ const resultOutline = [
   ['六、风险与局限', '风险边界、数据限制与使用说明'],
 ];
 
-function ReportModeSwitch({ value, onChange }) {
-  return (
-    <div className="report-style-mode-switch" role="tablist" aria-label="报告切换效果">
-      <button className={value === 'scroll' ? 'active' : ''} role="tab" aria-selected={value === 'scroll'} type="button" onClick={() => onChange('scroll')}><ArrowsDownUp size={14} />上下滑动</button>
-      <button className={value === 'paged' ? 'active' : ''} role="tab" aria-selected={value === 'paged'} type="button" onClick={() => onChange('paged')}><SquaresFour size={14} />左右切换</button>
-    </div>
-  );
-}
-
 function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, onTemplateChange, onReportModeChange }) {
   const [reportOpen, setReportOpen] = useState(true);
   const [previewExpanded, setPreviewExpanded] = useState(false);
   const [styleMenuOpen, setStyleMenuOpen] = useState(false);
-  const [styleMenuView, setStyleMenuView] = useState('select');
   const [draftTemplate, setDraftTemplate] = useState(null);
   const [draftReportMode, setDraftReportMode] = useState(reportMode);
   const [stylePrompt, setStylePrompt] = useState('');
@@ -327,7 +313,6 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
 
   function dismissStyleMenu() {
     setStyleMenuOpen(false);
-    setStyleMenuView('select');
     setDraftTemplate(null);
     setDraftReportMode(reportMode);
     setStylePrompt('');
@@ -338,23 +323,15 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
       dismissStyleMenu();
       return;
     }
-    setStyleMenuView('select');
-    setDraftTemplate(null);
+    setDraftTemplate(template);
     setDraftReportMode(reportMode);
-    setStylePrompt('');
+    setStylePrompt(createStyleModificationPrompt(template.name, reportMode));
     setStyleMenuOpen(true);
   }
 
   function chooseReportStyle(nextTemplate) {
     setDraftTemplate(nextTemplate);
     setStylePrompt(createStyleModificationPrompt(nextTemplate.name, draftReportMode));
-    setStyleMenuView('edit');
-    reportScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function chooseDraftReportMode(nextMode) {
-    setDraftReportMode(nextMode);
-    if (draftTemplate) setStylePrompt((current) => updateStyleModeInPrompt(current, nextMode));
     reportScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -368,7 +345,6 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
     onReportModeChange(nextReportMode);
     setStyleRevision({ templateName: nextTemplate.name, reportMode: nextReportMode, prompt: modification, status: 'generating' });
     setStyleMenuOpen(false);
-    setStyleMenuView('select');
     setDraftTemplate(null);
     setStylePrompt('');
     reportScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -468,16 +444,15 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
               <button className={`style-switch-button${styleMenuOpen ? ' active' : ''}`} type="button" aria-label="切换报告风格" aria-haspopup="dialog" aria-expanded={styleMenuOpen} onClick={toggleStyleMenu}>
                 <PaintBrush size={15} weight="duotone" /><span>切换风格</span><CaretDown size={11} />
               </button>
-              {styleMenuOpen && styleMenuView === 'select' ? (
-                <div className="report-style-menu" role="menu" aria-label="选择报告风格">
-                  <header><strong>切换报告风格</strong><small>选择展示效果和模板后，可预览并编辑修改要求</small></header>
-                  <ReportModeSwitch value={draftReportMode} onChange={chooseDraftReportMode} />
-                  <div>
+              {styleMenuOpen ? (
+                <div className="report-style-menu" role="dialog" aria-label="选择报告风格">
+                  <header><strong>切换报告风格</strong><small>选择模板后，可预览并填写修改要求</small></header>
+                  <div className="report-style-options">
                     {templates.map((option) => {
                       const OptionIcon = option.icon;
                       const selected = option.id === displayTemplate.id;
                       return (
-                        <button className={selected ? 'selected' : ''} type="button" role="menuitemradio" aria-checked={selected} key={option.id} style={{ '--item-accent': interfaceAccent }} onClick={() => chooseReportStyle(option)}>
+                        <button className={selected ? 'selected' : ''} type="button" aria-pressed={selected} key={option.id} style={{ '--item-accent': interfaceAccent }} onClick={() => chooseReportStyle(option)}>
                           <span className="report-style-thumbnail"><img src={option.image} alt="" /></span>
                           <span className="report-style-copy"><strong>{option.name}</strong><small><OptionIcon size={11} weight="duotone" />{option.tag}</small></span>
                           {selected ? <Check size={15} weight="bold" /> : <CaretRight size={14} />}
@@ -485,30 +460,16 @@ function ResultWorkspace({ prompt, template, topic, reportMode, isCustomStyle, o
                       );
                     })}
                   </div>
-                </div>
-              ) : null}
-              {styleMenuOpen && styleMenuView === 'edit' && draftTemplate ? (
-                <section className="report-style-editor" role="dialog" aria-label="编辑报告风格" style={{ '--item-accent': interfaceAccent }}>
-                  <header>
-                    <button type="button" aria-label="返回风格列表" onClick={() => setStyleMenuView('select')}><CaretLeft size={16} /></button>
-                    <div><strong>编辑风格</strong><small>预览效果并补充修改要求</small></div>
-                    <button type="button" aria-label="关闭风格编辑" onClick={dismissStyleMenu}><X size={16} /></button>
-                  </header>
-                  <div className="style-editor-body">
-                    <div className="style-editor-preview">
-                      <img src={draftTemplate.image} alt={`${draftTemplate.name}封面预览`} />
-                      <div><span><Eye size={13} />当前预览</span><strong>{draftTemplate.name}</strong><small>右侧已临时展示{reportModeSwitchLabels[draftReportMode]}效果</small></div>
-                    </div>
-                    <ReportModeSwitch value={draftReportMode} onChange={chooseDraftReportMode} />
-                    <label htmlFor="style-modification-prompt"><strong>修改提示词</strong><small>可在默认内容基础上补充颜色、排版或重点信息要求</small></label>
-                    <textarea id="style-modification-prompt" aria-label="风格修改提示词" maxLength={300} value={stylePrompt} onChange={(event) => setStylePrompt(event.target.value)} />
-                    <span className="style-prompt-count">{stylePrompt.length} / 300</span>
+                  <div className="report-style-prompt-field">
+                    <label htmlFor="report-style-prompt-inline"><strong>修改要求</strong><small>可在默认内容基础上补充配色、排版或重点信息要求</small></label>
+                    <textarea id="report-style-prompt-inline" aria-label="风格修改提示词" maxLength={300} value={stylePrompt} onChange={(event) => setStylePrompt(event.target.value)} />
+                    <span>{stylePrompt.length} / 300</span>
                   </div>
-                  <footer>
+                  <footer className="report-style-menu-footer">
                     <button type="button" onClick={dismissStyleMenu}>取消</button>
-                    <button className="submit-style-change" type="button" disabled={!stylePrompt.trim()} onClick={submitStyleModification}><PaperPlaneRight size={14} weight="fill" />提交修改</button>
+                    <button className="submit-style-change" type="button" disabled={!draftTemplate || !stylePrompt.trim()} onClick={submitStyleModification}><PaperPlaneRight size={14} weight="fill" />提交修改</button>
                   </footer>
-                </section>
+                </div>
               ) : null}
             </div>
             <button type="button" aria-label="下载报告"><DownloadSimple size={17} /></button>

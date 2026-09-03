@@ -17,7 +17,7 @@
 - 增加样式描述后进入“预置模板 + 自定义风格”路径；无风格描述时使用默认清爽简报模板。
 - 添加风格参考浮窗支持本地文件入口和已有 HTML/PPT/Word 产物引用；引用后生成带来源名称的自定义风格提示词。
 - 结果页按解析后的模式显示：上下滑动为连续报告，分页切换为六页左右轮播。
-- 报告右上角“切换风格”浮窗在模板列表和编辑步骤都提供“上下滑动 / 左右切换”；切换后右侧即时预览，提交才写入新版本，关闭浮窗则恢复已提交模式。
+- 报告右上角“切换风格”浮窗不再显示“上下滑动 / 左右切换”；选择模板后右侧即时预览，浮窗底部直接编辑修改要求，提交才写入新版本，取消则恢复已提交模板。
 
 ## Runtime checks
 
@@ -41,7 +41,9 @@
 - 在推荐提示词后添加排版要求并发送：结果标识为“经营报告 + 自定义风格 · 分页切换”，右侧出现六页轮播，下一章节从 1/6 切换为 2/6。
 - 仅输入“生成一份应付管理分析报告”：结果使用“清爽简报 · 上下滑动”，未误判为自定义风格。
 - 引用 `report_应付管理分析_20260814.html`：显示附件芯片并回写来源、基础模板和上下滑动模式，发送按钮启用。
-- 在“切换风格”中从上下滑动改为左右切换并选择咨询报告：右侧立即出现分页箭头；编辑提示词追加“封面增加管理层摘要”后切回上下滑动，自定义内容未丢失；再次切回左右切换并提交后，版本更新为“咨询报告 · 左右切换”。
+- 打开“切换风格”：`.report-style-mode-switch` 数量为 0，浮窗中不再出现“上下滑动 / 左右切换”。
+- 在同一浮窗选择“深色报告”：右侧即时预览深色报告，`aria-pressed=true`，多行输入框默认回写对应修改提示词。
+- 编辑多行修改要求并提交：浮窗关闭，报告重新生成，版本链从 1 个版本更新为 2 个版本，报告保持原有“上下滑动”方式。
 
 ## Visual review
 
@@ -49,6 +51,7 @@
 - Implementation screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-template-cards-prompt-after.png`（1280 × 720，等比例 16:9）。
 - Side-by-side comparison: `C:\Users\kingdee\AppData\Local\Temp\lingee-template-card-comparison.png`。
 - Latest annotation fix screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-template-prompt-edit-fixed.png`（1280 × 720）。
+- Report style dropdown fix screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-style-menu-textarea-fixed.png`（1280 × 720）。
 - 对照参考图检查：四张卡片均为上图下文、同高同宽；模板下拉与提示词处于同一行；层级、圆角、留白和阴影接近参考图。
 - 报告模板本身的配色仅出现在缩略图和报告内容，不会改变外围页面主题色。
 - 当前视口无水平或垂直溢出，卡片、提示词下拉和发送按钮没有截断或重叠。
@@ -57,11 +60,14 @@
 
 - Earlier P1: 聚焦推荐提示词后切换成普通文本框，导致行内模板下拉消失。Fix: 将下拉后的提示内容改为持续可编辑的受控文本框，模板下拉始终保留。Post-fix evidence: `lingee-template-prompt-edit-fixed.png`。
 - Earlier P2: 模板名称在智能体上下文行和提示词正文重复出现。Fix: 删除上下文行的 `.selected-template-chip`。Post-fix DOM count: 0。
+- Latest P1: “切换风格”浮窗中的展示模式开关不属于本次交互。Fix: 删除模式切换控件，保持当前报告模式不变。Post-fix DOM count: `.report-style-mode-switch = 0`。
+- Latest P1: 风格修改要求与模板选择分成两步，交互割裂。Fix: 将受控多行输入框与“取消 / 提交修改”操作合并到模板列表下方；选择模板时即时回写默认提示词并预览。
 - Typography: 延续现有 14px 提示词字号与 1.65 行高；模板名称保持 13px 半粗体。
 - Spacing: 删除顶部标签后，企业数据分析与主题选择间距恢复为现有 8px 节奏；正文下拉与编辑区保持 5px 间距。
 - Colors: 继续使用固定蓝紫界面强调色，未随模板颜色变化。
 - Image quality: 模板缩略图资源及裁切未改动，无新增压缩或拉伸。
 - Copy: 默认推荐提示词文案不变，自定义追加文字在模板切换后完整保留。
+- Accessibility: 风格选择浮窗使用 `role="dialog"`，模板按钮提供 `aria-pressed`，多行输入框可通过“风格修改提示词”标签定位。
 
 ## Remaining boundary
 
