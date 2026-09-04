@@ -167,13 +167,15 @@ const templates = [
   },
 ];
 
-function resolveReportRequest(input) {
+function resolveReportRequest(input, selectedTemplate = null, selectedMode = 'scroll') {
   const normalized = input.trim();
   const matchedTemplate = templates.find((option) => normalized.includes(`【${option.name}】`) || normalized.includes(option.name));
-  const template = matchedTemplate || templates[0];
+  const template = matchedTemplate || selectedTemplate || templates[0];
   const reportMode = /分页切换|分页轮播|左右切换/.test(normalized)
     ? 'paged'
-    : 'scroll';
+    : /上下滑动|上下滚动/.test(normalized)
+      ? 'scroll'
+      : selectedMode;
   const recommendedPrompt = createTemplatePrompt(template.name, reportMode);
   return {
     template,
@@ -574,7 +576,7 @@ function TemplatePreviewModal({ template, onClose, onSelect, selected }) {
 
   if (!template) return null;
   const Icon = template.icon;
-  const active = selected.id === template.id;
+  const active = selected?.id === template.id;
 
   function changeReportPage(nextPage) {
     setReportPage(Math.min(reportPageCount - 1, Math.max(0, nextPage)));
@@ -655,17 +657,17 @@ function TemplatePreviewModal({ template, onClose, onSelect, selected }) {
   );
 }
 
-function StyleTemplateGallery({ selected, selectedMode, onSelect }) {
+function StyleTemplateGallery({ selected, onSelect }) {
   const [previewTemplate, setPreviewTemplate] = useState(null);
 
   return (
-    <section className="style-gallery" aria-label="选择报告模板">
-      <div className="template-thumbnail-grid" aria-label="预置报告模板">
+    <section className="style-gallery" aria-label="选择风格模板">
+      <div className="template-thumbnail-grid" aria-label="预置风格模板">
         {templates.map((template) => {
-          const isSelected = selected.id === template.id;
+          const isSelected = selected?.id === template.id;
           return (
             <article className={`template-thumbnail-card${isSelected ? ' selected' : ''}`} style={{ '--item-accent': interfaceAccent }} key={template.id}>
-              <button className="template-card-select" type="button" aria-label={`选择${template.name}模板，默认上下滑动`} aria-pressed={isSelected && selectedMode === 'scroll'} onClick={() => onSelect(template, 'scroll')}>
+              <button className="template-card-select" type="button" aria-label={`选择${template.name}模板，默认上下滑动`} aria-pressed={isSelected} onClick={() => onSelect(template, 'scroll')}>
                 <span className="template-thumbnail-image">
                   <img src={template.image} alt={`${template.name}报告缩略图`} />
                 </span>
@@ -690,6 +692,7 @@ export function App() {
   const [resourceTab, setResourceTab] = useState('topics');
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
+  const [hasSelectedTemplate, setHasSelectedTemplate] = useState(false);
   const [selectedReportMode, setSelectedReportMode] = useState('scroll');
   const [selectedAgent, setSelectedAgent] = useState('企业数据分析');
   const [agentEntryMode, setAgentEntryMode] = useState('quick');
@@ -709,8 +712,8 @@ export function App() {
   const fileInputRef = useRef(null);
 
   const canSend = Boolean(prompt.trim() || selectedSkill || attachedFile);
-  const templatePromptPrefix = `生成【${selectedTemplate.name}】`;
-  const showStructuredPrompt = Boolean(prompt) && prompt.startsWith(templatePromptPrefix);
+  const templatePromptPrefix = selectedTemplate ? `生成【${selectedTemplate.name}】` : '';
+  const showStructuredPrompt = Boolean(hasSelectedTemplate && selectedTemplate && prompt) && prompt.startsWith(templatePromptPrefix);
   const templatePromptSuffix = showStructuredPrompt ? prompt.slice(templatePromptPrefix.length) : '';
   const visibleTopics = topicSearching
     ? (topicSearch.trim() ? topicOptions.filter((topic) => topic.toLowerCase().includes(topicSearch.trim().toLowerCase())) : [])
@@ -744,7 +747,11 @@ export function App() {
 
   function submitTask() {
     if (!canSend) return;
-    const request = resolveReportRequest(prompt);
+    const request = resolveReportRequest(
+      prompt,
+      hasSelectedTemplate ? selectedTemplate : null,
+      hasSelectedTemplate ? selectedReportMode : 'scroll',
+    );
     setSelectedTemplate(request.template);
     setSelectedReportMode(request.reportMode);
     setSubmittedPrompt(request.prompt);
@@ -778,7 +785,13 @@ export function App() {
   function chooseTemplate(template, reportMode = 'scroll') {
     setSelectedTemplate(template);
     setSelectedReportMode(reportMode);
-    setPrompt(createTemplatePrompt(template.name, reportMode));
+    setHasSelectedTemplate(true);
+    setOpenMenu(null);
+  }
+
+  function clearTemplate() {
+    setHasSelectedTemplate(false);
+    setSelectedReportMode('scroll');
     setOpenMenu(null);
   }
 
@@ -793,7 +806,7 @@ export function App() {
   function useStyleSource(sourceName) {
     setAttachedFile(sourceName);
     setSelectedReportMode('scroll');
-    setPrompt(createSourceStylePrompt(sourceName, selectedTemplate.name, 'scroll'));
+    setPrompt(createSourceStylePrompt(sourceName, selectedTemplate?.name || templates[0].name, 'scroll'));
     setOpenMenu(null);
   }
 
@@ -822,7 +835,17 @@ export function App() {
           </section>
 
           <section className="composer-wrap" ref={composerRef}>
-            <div className={`composer${selectedAgent && agentEntryMode === 'quick' ? ' with-agent' : ''}`}>
+            <div className={`composer${selectedAgent && agentEntryMode === 'quick' ? ' with-agent' : ''}${hasSelectedTemplate ? ' has-template-card' : ''}`}>
+              {hasSelectedTemplate && (
+                <div className="selected-report-template-card" aria-label={`已选择${selectedTemplate.name}风格报告模板`}>
+                  <img src={selectedTemplate.image} alt="" />
+                  <span>
+                    <strong>{selectedTemplate.name}</strong>
+                    <small>{selectedTemplate.tag} · {reportModeLabels[selectedReportMode]}</small>
+                  </span>
+                  <button type="button" aria-label={`取消选择${selectedTemplate.name}模板`} onClick={clearTemplate}><X size={15} /></button>
+                </div>
+              )}
               {selectedAgent && agentEntryMode === 'quick' && (
                 <div className="agent-context-row" aria-label="当前智能体与主题">
                   <span className="agent-selection-chip"><Robot size={17} weight="duotone" />{selectedAgent}<button type="button" aria-label={`取消选择${selectedAgent}`} onClick={clearAgent}><X size={14} /></button></span>
@@ -929,7 +952,7 @@ export function App() {
           {selectedAgent && <section className="recommendations resource-library">
             <div className="resource-tabs" role="tablist" aria-label="内容选择">
               <button className={resourceTab === 'topics' ? 'active' : ''} role="tab" aria-selected={resourceTab === 'topics'} type="button" onClick={() => setResourceTab('topics')}>推荐主题</button>
-              {selectedAgent === '企业数据分析' ? <button className={resourceTab === 'templates' ? 'active' : ''} role="tab" aria-selected={resourceTab === 'templates'} type="button" onClick={() => setResourceTab('templates')}>报告模板</button> : null}
+              {selectedAgent === '企业数据分析' ? <button className={resourceTab === 'templates' ? 'active' : ''} role="tab" aria-selected={resourceTab === 'templates'} type="button" onClick={() => setResourceTab('templates')}>风格模板</button> : null}
             </div>
             {resourceTab === 'topics' ? (
               <div role="tabpanel" aria-label="推荐主题">
@@ -944,8 +967,8 @@ export function App() {
                 <button className="topic-center" type="button"><Sparkle size={18} weight="duotone" /><strong>主题中心</strong><span>创建和管理分析主题，汇聚数据、沉淀业务语义，为智能分析构建统一可信的数据基础。</span><CaretRight size={16} /></button>
               </div>
             ) : (
-              <div role="tabpanel" aria-label="报告模板">
-                <StyleTemplateGallery selected={selectedTemplate} selectedMode={selectedReportMode} onSelect={chooseTemplate} />
+              <div role="tabpanel" aria-label="风格模板">
+                <StyleTemplateGallery selected={hasSelectedTemplate ? selectedTemplate : null} onSelect={chooseTemplate} />
               </div>
             )}
           </section>}

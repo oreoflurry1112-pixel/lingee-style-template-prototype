@@ -1,18 +1,19 @@
-# Design QA — 报告模板卡片与推荐提示词样式
+# Design QA — 风格模板选择与顶部预览卡片
 
 ## Target flow
 
-`企业数据分析 → 报告模板 → 选择模板 → 聚焦编辑提示词 → 行内模板下拉保持可用 → 切换模板并保留自定义内容`
+`企业数据分析 → 风格模板 → 选择模板 → 顶部显示风格预览卡片且输入框保持原文 → 取消模板 → 卡片消失且输入框不变`
 
 ## User-visible behavior verified
 
-- “报告模板”与“推荐主题”作为同级页签；仅企业数据分析智能体显示报告模板入口。
+- “风格模板”与“推荐主题”作为同级页签；仅企业数据分析智能体显示风格模板入口。
 - 四张模板卡片改为参考图中的竖向结构：上方大幅报告缩略图，下方模板名称与两行说明；选中卡片使用固定蓝紫色勾选标识。
-- 鼠标悬停模板缩略图显示独立“预览”按钮，点击卡片主体仍直接选择模板并回写默认“上下滑动”提示词。
+- 鼠标悬停模板缩略图显示独立“预览”按钮；点击卡片主体选择模板，并在输入框顶部显示包含缩略图、模板名称、上下滑动模式与取消按钮的风格预览卡片。
+- 选择模板和取消模板均不改写输入框；仅模板卡片不能启用发送按钮，用户仍需输入实际分析需求。
 - 推荐提示词为“生成 + 模板下拉 + 可编辑提示内容”的内嵌组合；下拉内显示四个模板并勾选当前项。
 - 删除智能体与主题行中重复显示的模板标签，仅保留提示词正文里的模板下拉。
 - 聚焦可编辑提示内容时，模板下拉持续显示且可操作；切换模板时保留用户已追加的自定义要求。
-- 预览弹窗可切换“上下滑动”和“分页切换”；点击“使用此模板”按当前查看模式回写推荐提示词。
+- 预览弹窗可切换“上下滑动”和“分页切换”；点击“使用此模板”按当前查看模式生成顶部风格预览卡片，不回写推荐提示词。
 - 推荐提示词可继续编辑；发送时重新识别模板名称、浏览模式和额外样式描述。
 - 增加样式描述后进入“预置模板 + 自定义风格”路径；无风格描述时使用默认清爽简报模板。
 - 添加风格参考浮窗支持本地文件入口和已有 HTML/PPT/Word 产物引用；引用后生成带来源名称的自定义风格提示词。
@@ -31,7 +32,9 @@
 
 ## Interaction evidence
 
-- 点击“咨询报告”卡片：内嵌提示词的无障碍文本精确回写为 `生成【咨询报告】风格的分析报告，报告支持上下滑动，包含现状概览、表现分析、结论建议。`，发送按钮启用。
+- 点击“咨询报告”卡片：顶部出现“咨询报告 / 咨询长报 · 上下滑动”预览卡片；任务描述仍为空，发送按钮保持禁用。
+- 点击预览卡片的“取消选择咨询报告模板”：卡片数量变为 0，任务描述仍为空。
+- 再次选择“经营报告”并输入“请分析供应商集中度并给出行动建议”：输入内容保持原文，发送按钮启用；发送后右侧正确显示经营报告完整预览。
 - 点击提示词内的“咨询报告”下拉：菜单显示清爽简报、咨询报告、经营报告、深色报告，并勾选咨询报告。
 - 聚焦提示词编辑框并追加“请突出重大风险”：编辑框正常工作，行内模板下拉没有消失。
 - 编辑状态下从“深色报告”切换为“咨询报告”：提示词更新为 `生成【咨询报告】...请突出重大风险。`，自定义内容保持不变。
@@ -53,8 +56,8 @@
 
 ## Visual review
 
-- Reference screenshot: `C:\Users\kingdee\AppData\Local\Temp\codex-clipboard-f9a56262-0b62-41c6-8ff4-9aecfd8294b9.png`（3844 × 2164）。
-- Implementation screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-template-cards-prompt-after.png`（1280 × 720，等比例 16:9）。
+- Source visual truth: 当前用户浏览器标注截图（1291 × 909 CSS px），目标区域为业务分析输入框和风格模板页签。
+- Implementation screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-selected-template-card.png`（1280 × 720，桌面视口，浏览器 1× CSS 像素）。
 - Side-by-side comparison: `C:\Users\kingdee\AppData\Local\Temp\lingee-template-card-comparison.png`。
 - Latest annotation fix screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-template-prompt-edit-fixed.png`（1280 × 720）。
 - Report style dropdown fix screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-style-menu-textarea-fixed.png`（1280 × 720）。
@@ -64,6 +67,7 @@
 - Latest linked-prompt screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-style-mode-prompt-linked.png`（1280 × 720）。
 - Latest interaction comparison: `C:\Users\kingdee\AppData\Local\Temp\lingee-style-mode-interaction-comparison.png`（1920 × 540；左侧初始空白状态，右侧联动推荐提示词状态）。
 - Latest current-style screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-style-menu-current-active.png`（1280 × 720；四个风格完整显示，咨询报告为当前选中态）。
+- Latest selected-template card screenshot: `C:\Users\kingdee\AppData\Local\Temp\lingee-selected-template-card.png`（1280 × 720；咨询报告缩略图卡片位于输入框顶部，带取消按钮，正文为空）。
 - 对照参考图检查：四张卡片均为上图下文、同高同宽；模板下拉与提示词处于同一行；层级、圆角、留白和阴影接近参考图。
 - 报告模板本身的配色仅出现在缩略图和报告内容，不会改变外围页面主题色。
 - 当前视口无水平或垂直溢出，卡片、提示词下拉和发送按钮没有截断或重叠。
@@ -76,11 +80,12 @@
 - Latest P1: 风格修改要求与模板选择分成两步，交互割裂。Fix: 将受控多行输入框与“取消 / 提交修改”操作合并到模板列表下方；选择模板时即时预览，修改要求独立选填。
 - Earlier P1: 上一轮按标注过滤当前风格，仅保留三个切换目标。Latest correction: 恢复四个完整风格，并用勾选态明确当前正在生效的风格。Post-fix evidence: 咨询报告、清爽简报、经营报告、深色报告均可见，咨询报告 `aria-pressed=true`。
 - Latest P1: 修改要求预填系统提示词，不符合“先空白、交互后推荐”的输入预期。Fix: 打开浮窗时保持空值；第一次点击展示方式或新模板时生成推荐提示词，后续切换只替换模板与模式字段并保留自定义补充内容。
+- Latest P1: 选择模板会直接把推荐提示词写入正文，用户无法区分风格选择和实际分析需求。Fix: 把模板选择状态改为输入框顶部独立预览卡片，并提供取消按钮；选择和取消均不触碰任务描述。Post-fix evidence: 选择咨询报告后正文值为 `''`、发送按钮禁用；取消后卡片消失且正文仍为 `''`。
 - Typography: 延续现有 14px 提示词字号与 1.65 行高；模板名称保持 13px 半粗体。
 - Spacing: 删除顶部标签后，企业数据分析与主题选择间距恢复为现有 8px 节奏；正文下拉与编辑区保持 5px 间距。
 - Colors: 继续使用固定蓝紫界面强调色，未随模板颜色变化。
 - Image quality: 模板缩略图资源及裁切未改动，无新增压缩或拉伸。
-- Copy: 默认推荐提示词文案不变，自定义追加文字在模板切换后完整保留。
+- Copy: 页签文案由“报告模板”改为“风格模板”；模板选择不再生成或改写推荐提示词，用户自定义任务描述完整保留。
 - Accessibility: 风格选择浮窗使用 `role="dialog"`，模板按钮提供 `aria-pressed`，多行输入框可通过“风格修改提示词”标签定位。
 
 ## Remaining boundary

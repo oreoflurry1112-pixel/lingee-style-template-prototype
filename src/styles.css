@@ -178,6 +178,8 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
 .composer-wrap { position: relative; z-index: 3; }
 .composer { position: relative; height: 136px; padding: 15px 20px 14px; display: flex; flex-direction: column; background: #fff; border: 1px solid #dedee3; border-top: 2px solid color-mix(in srgb, var(--active-template) 16%, #dedee3); border-radius: 29px; box-shadow: 0 5px 18px rgba(42, 39, 55, .07), inset 0 0 0 1px rgba(255,255,255,.7); transition: border-color .2s ease, box-shadow .2s ease; }
 .composer.with-agent { height: 164px; padding-top: 13px; }
+.composer.has-template-card { height: 188px; }
+.composer.with-agent.has-template-card { height: 222px; }
 .composer:focus-within { border-color: color-mix(in srgb, var(--active-template) 45%, #dedee3); box-shadow: 0 8px 25px rgba(42, 39, 55, .09), 0 0 0 3px color-mix(in srgb, var(--active-template) 8%, transparent); }
 .composer textarea { width: 100%; flex: 1; resize: none; border: 0; outline: none; color: #2c2c32; background: transparent; font-size: 15px; line-height: 1.6; }
 .composer textarea::placeholder { color: #b8b8be; }
@@ -213,6 +215,14 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
 .sent-toast { position: absolute; left: 50%; top: -48px; transform: translateX(-50%); height: 36px; padding: 0 14px; display: flex; align-items: center; gap: 7px; border: 1px solid #e6e6eb; border-radius: 18px; color: #44444a; background: white; box-shadow: 0 9px 26px rgba(36, 33, 49, .12); font-size: 12px; }
 .sent-toast svg { color: #20a36b; }
 .composer-file-input { display: none; }
+.selected-report-template-card { width: min(286px, 100%); height: 48px; margin: -3px 0 9px; padding: 5px 5px 5px 6px; flex: 0 0 auto; display: grid; grid-template-columns: 58px minmax(0, 1fr) 28px; align-items: center; gap: 8px; overflow: hidden; border: 1px solid #e7e7ec; border-radius: 13px; color: #3e3e45; background: #fafafd; box-shadow: 0 2px 7px rgba(36,33,49,.04); }
+.selected-report-template-card > img { width: 58px; height: 36px; display: block; object-fit: cover; object-position: center top; border: 1px solid #ececf0; border-radius: 8px; background: #eeeef2; }
+.selected-report-template-card > span { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.selected-report-template-card strong, .selected-report-template-card small { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.selected-report-template-card strong { font-size: 11px; font-weight: 650; }
+.selected-report-template-card small { color: #9898a0; font-size: 8px; }
+.selected-report-template-card > button { width: 27px; height: 27px; padding: 0; border: 0; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #92929b; background: transparent; cursor: pointer; }
+.selected-report-template-card > button:hover { color: #55555d; background: #ededf1; }
 .composer-selection-row { height: 28px; margin: -4px 0 2px; display: flex; align-items: center; gap: 6px; overflow: hidden; }
 .composer-selection-chip { height: 26px; max-width: 250px; padding: 0 5px 0 7px; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--active-template) 13%, #e7e7ec); border-radius: 9px; color: #55555d; background: color-mix(in srgb, var(--active-template) 6%, white); font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
 .composer-selection-chip > span { width: 17px; height: 17px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; color: var(--active-template); background: color-mix(in srgb, var(--active-template) 10%, white); font-size: 9px; font-weight: 700; }
@@ -432,6 +442,8 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; -webkit
   .category-tabs button { min-width: 0; padding: 0 13px; }
   .composer { height: 158px; }
   .composer.with-agent { height: 184px; }
+  .composer.has-template-card { height: 210px; }
+  .composer.with-agent.has-template-card { height: 244px; }
   .composer-toolbar { align-items: flex-end; }
   .composer-toolbar .source-pill { max-width: 112px; }
   .agent-context-row .source-pill { max-width: 132px; }
